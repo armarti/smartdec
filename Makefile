@@ -1,10 +1,14 @@
 SRC_DIR		= $(CURDIR)/src
-BUILD_DIR	!= echo /tmp/snowman.`echo $(CURDIR) | sha1sum | awk '{print $$1}'`
+BUILD_DIR	= $(shell mktemp -d /tmp/snowmanXXXX)
 BUILD_DIR_LINK	= $(CURDIR)/build
 BUILD_SCRIPT	= $(BUILD_DIR)/build.ninja
 DECOMPILER	= $(BUILD_DIR)/nocode/nocode
 TEST_DIR	= $(BUILD_DIR)/tests
 TEST_SCRIPT	= $(TEST_DIR)/build.ninja
+
+#.PHONY: printvars
+#printvars:
+#	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
 
 .PHONY: all
 all: tags build
@@ -18,7 +22,7 @@ $(BUILD_DIR) $(BUILD_DIR_LINK):
 	ln -s $(BUILD_DIR) $(BUILD_DIR_LINK)
 
 $(BUILD_SCRIPT): $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -G Ninja $(SRC_DIR)
+	cd $(BUILD_DIR) && cmake -DNC_QT5=ON -DCMAKE_PREFIX_PATH=/usr/local/opt/qt -DQt5Core_DIR=/usr/local/opt/qt -DBOOST_ROOT= -G Ninja $(SRC_DIR)
 
 .PHONY: test
 test: build $(TEST_SCRIPT)
